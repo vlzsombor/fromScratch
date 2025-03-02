@@ -9,17 +9,17 @@ type LinearRegression() =
         let m = float (Array.length y_pred)
 
         let cost =
-            Array.fold2 (fun acc x y -> (acc + (x - y) ** 2.) / (2. * m)) 0. y_pred y_true
+            Array.fold2 (fun acc x y -> (acc + (x - y) ** 2.)) 0. y_pred y_true
 
-        cost
+        (cost / (2. * m))
 
     static let backward (prediction: float[]) (y_true: float[]) (x_array: float[])=
         let m = float (Array.length prediction)
-        let dB = Array.fold2 (fun acc x x2 -> (acc + x - x2) / m) 0. prediction y_true
+        let dB = (Array.fold2 (fun acc x x2 -> (acc + x - x2)) 0. prediction y_true)/m
         
         let temp = Array.map2 (-) prediction y_true
        
-        let dW = Array.fold2 (fun acc x x2 -> (acc + x * x2) / m) 0. temp x_array
+        let dW = (Array.fold2 (fun acc x x2 -> (acc + x * x2)) 0. temp x_array)/ m
         dW, dB
 
     static let rec GradientDescent
@@ -33,8 +33,8 @@ type LinearRegression() =
         let prediction = LinearRegression.predict X w b
         let cost = compute_cost prediction y
         let dW, dB = backward prediction y X
-        printfn "%O %O" (w,b) cost
-        if iteration <= 0 || Math.Abs(prevCost - cost) < 0.0000000000001 then
+        //printfn "%O %O" (w,b) cost
+        if iteration <= 0 || (Math.Abs (cost - prevCost) )< 0.000000000001 then
             w - (dW * alpha), b - (dB * alpha)
         else
             GradientDescent X y (w - (dW * alpha), b - (dB * alpha)) (iteration - 1) cost alpha
@@ -130,8 +130,9 @@ printfn "%O" (LinearRegression.root_mean_squared_error (LinearRegression.predict
 printfn "%O" (LinearRegression.r_squared (LinearRegression.predict testX w b) testY)
 printfn "%A" (w, b)
 
-let wG, bG = LinearRegression.CalculateGradientDescent trainX trainY (LinearRegression.init) 1000000000 0.001
- 
+let wG, bG = LinearRegression.CalculateGradientDescent trainX trainY (0.01, 0) 1000000000 0.1
+
+
 printfn "%O" (wG, bG)
 printfn "%O" (LinearRegression.MSE (LinearRegression.predict testX wG bG) testY)
 printfn "%O" (LinearRegression.root_mean_squared_error (LinearRegression.predict testX wG bG) testY)
