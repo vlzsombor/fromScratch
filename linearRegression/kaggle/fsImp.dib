@@ -23,10 +23,6 @@ let linearRegression =
 
 #r "nuget:Numpy, 3.11.1.34"
 
-#!csharp
-
-fasfas
-
 #!fsharp
 
 #r "nuget: NumpyDotNet, 0.9.86.6"
@@ -218,3 +214,11 @@ let data = [|1.;3.;5.;4.;2.;8.|]
 
 let varPopulation = Seq.varPopulation data
 varPopulation
+
+#!fsharp
+
+let a (f: float,b) = 
+    f,b
+
+
+a (6.-7.*100., 7+6*100)
