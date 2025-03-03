@@ -1,18 +1,13 @@
-﻿// For more information see https://aka.ms/fsharp-console-apps
-open FSharp.Stats
+﻿open FSharp.Stats
 open FSharp.Data
 open System
-//np.sum(np.square(predictions - self.y)) / (2 * m)
 
 type LinearRegression() =
     static let compute_cost (y_pred: float[]) (y_true: float[]) : float =
         let m = float (Array.length y_pred)
-
         let cost =
             Array.fold2 (fun acc x y -> (acc + (x - y) ** 2.)) 0. y_pred y_true
-
         (cost / (2. * m))
-
     static let backward (prediction: float[]) (y_true: float[]) (x_array: float[])=
         let m = float (Array.length prediction)
         let dB = (Array.fold2 (fun acc x x2 -> (acc + x - x2)) 0. prediction y_true)/m
@@ -34,10 +29,31 @@ type LinearRegression() =
         let cost = compute_cost prediction y
         let dW, dB = backward prediction y X
         //printfn "%O %O" (w,b) cost
-        if iteration <= 0 || (Math.Abs (cost - prevCost) )< 0.000000000001 then
+        if iteration <= 0 then
             w - (dW * alpha), b - (dB * alpha)
         else
             GradientDescent X y (w - (dW * alpha), b - (dB * alpha)) (iteration - 1) cost alpha
+
+    static let rec GradientDescent2
+        (X: float[])
+        (y: float[])
+        (w: float, b: float)
+        (iteration: int)
+        (prevCost)
+        (alpha: float)
+        =
+
+            let prediction = LinearRegression.predict X w b
+            let cost = compute_cost prediction y
+            let dW, dB = backward prediction y X
+            //printfn "%O %O" (w,b) cost
+            seq {
+                if iteration <= 0 || (Math.Abs (cost - prevCost) )< 0.000000000001 then
+                    yield  w, b
+                else
+                    yield w,b
+                    yield! GradientDescent2 X y (w - (dW * alpha), b - (dB * alpha)) (iteration - 1) cost alpha
+            }
 
     static member CalculateGradientDescent
         (X: float[])
@@ -46,7 +62,7 @@ type LinearRegression() =
         (iteration: int)
         (alpha: float)
         =
-        GradientDescent X y (w, b) iteration 10000000 alpha
+        GradientDescent2 X y (w, b) iteration 10000000 alpha
 
     static member init = (Random.rndgen.NextFloat(), 0.)
 
@@ -125,17 +141,34 @@ let trainX, testX = LinearRegression.standardize_data trainXtemp testXtemp
 
 let w, b = LinearRegression.coefficient_ols trainX trainY
 
-printfn "%O" (LinearRegression.MSE (LinearRegression.predict testX w b) testY)
-printfn "%O" (LinearRegression.root_mean_squared_error (LinearRegression.predict testX w b) testY)
-printfn "%O" (LinearRegression.r_squared (LinearRegression.predict testX w b) testY)
+let pred1 = LinearRegression.predict testX w b
+
+
 printfn "%A" (w, b)
+printfn "%O" (LinearRegression.MSE (pred1) testY)
+printfn "%O" (LinearRegression.root_mean_squared_error (pred1) testY)
+printfn "%O" (LinearRegression.r_squared (pred1) testY)
 
-let wG, bG = LinearRegression.CalculateGradientDescent trainX trainY (0.01, 0) 1000000000 0.1
+// (28.95283303, 49.93986917)
+// 9,43292219203929
+// 3,071306268029825
+// 0,9888014444327563
 
+
+printfn "Seq:"
+let printSeq seq1 = Seq.iter (printfn "\t%A ") seq1; printfn ""
+let seqGradientDescent = LinearRegression.CalculateGradientDescent trainX trainY (LinearRegression.init) 100000 0.1
+
+seqGradientDescent |> printSeq 
+let wG,bG = seqGradientDescent |> Seq.last
 
 printfn "%O" (wG, bG)
-printfn "%O" (LinearRegression.MSE (LinearRegression.predict testX wG bG) testY)
-printfn "%O" (LinearRegression.root_mean_squared_error (LinearRegression.predict testX wG bG) testY)
-printfn "%O" (LinearRegression.r_squared (LinearRegression.predict testX wG bG) testY)
 
-
+let pred2 = LinearRegression.predict testX wG bG
+printfn "%O" (LinearRegression.MSE (pred2) testY)
+printfn "%O" (LinearRegression.root_mean_squared_error (pred2) testY)
+printfn "%O" (LinearRegression.r_squared (pred2) testY)
+// (28,952831670324716, 49,93986678677254)
+// 9,43292489724819
+// 3,071306708430174
+// 0,9888014412211924
