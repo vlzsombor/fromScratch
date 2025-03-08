@@ -1,0 +1,224 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"},{"aliases":[],"languageName":"fsharp","name":"fsharp"}]}}
+
+#!fsharp
+
+#r "nuget:Numpy, 3.11.1.34"
+
+#!fsharp
+
+open System;
+
+#!fsharp
+
+open Numpy;
+
+#!fsharp
+
+let linearRegression = 
+    
+
+#!csharp
+
+#r "nuget:Numpy, 3.11.1.34"
+
+#!fsharp
+
+#r "nuget: NumpyDotNet, 0.9.86.6"
+
+#!csharp
+
+#r "nuget: NumpyDotNet, 0.9.86.6"
+
+using NumpyDotNet;
+
+ndarray O = np.arange(0, 12, dtype: np.Int32);  // create Int32 ndarray   
+ndarray A = (ndarray)O["2:6"];                  // create a view of this middle 4 elements, starting at index 2   
+ndarray B = (ndarray)O["2:6"];                  // create a view of this middle 4 elements, starting at index 2   
+
+Int32[] O1 = O.AsInt32Array();                  // Int32[] {0,1,2,3,4,5,6,7,8,9,10,11}  reference to real data   
+Int32[] A1 = A.AsInt32Array();                  // Int32[] {2,3,4,5}  The view was copied into a new array.   
+Int16[] A2 = A.AsInt16Array();                  // Int16[] {2,3,4,5}  The view was copied into a new array.   
+
+Console.WriteLine(A);
+var a = np.sum(A);
+Console.WriteLine(a);
+
+double[] vector1 = { 1, 2, 3 };
+double[] vector2 = { 3, 4, 5 };
+
+#!fsharp
+
+open NumpyDotNet;
+let O = np.arange(0, 12, np.Int32)
+
+#!fsharp
+
+np.arange(0, 12, dtype: np.Int32)["2:6"];
+
+#!fsharp
+
+open System
+let initVar = 
+    let rnd = System.Random()
+    let w :float32 = rnd.NextSingle()
+    let b = 0.
+    w,b
+
+#!fsharp
+
+let coefficient_ols (X: float[]) (Y: float[]) =  // Ordinary least squares
+    let n = X.Length
+    let x_mean = Array.average X
+    let y_mean = Array.average Y
+
+    let numerator = 0.
+    let denominator = 0.
+    let numerator =
+        Array.fold2 (fun acc x y -> acc + (x - x_mean) * (y - y_mean)) 0. X Y
+    let denominator =
+        Array.fold (fun acc x -> acc + (x - x_mean) ** 2.0) 0. X
+        
+    let slope = numerator / denominator
+    let intercept = y_mean - slope * x_mean
+    
+    slope,intercept
+    
+let predict (x: float[]) (w: float) (b: float) :float[] =
+    x |> Array.map (fun xi -> w * xi + b)
+
+    
+    
+let X : float[]= [| 1.0; 2.0; 3.0; 4.0; 5.0 |]  // Float array
+let Y : float[]= [| 11.0; 12.0; 13.0; 14.0; 15.0 |]  // Float array
+
+printfn "%O" (coefficient_ols X Y)
+
+#!fsharp
+
+let MSE (xInput: float[]) (x_realInput: float[]) = (Array.fold2 (fun acc x x_r -> acc + (x - x_r) ** 2.0) 0. xInput x_realInput ) / float xInput.Length
+
+#!fsharp
+
+// let X : float[]= [| 1.0; 2.0; 3.0; 4.0; 5.0 |]  // Float array
+// let Y : float[]= [| 88.0; 2.0; 3.0; 4.0; 5.0 |]  // Float array
+
+// printfn "%O" (coefficent_ols X Y)
+
+#!fsharp
+
+#r "nuget: Fsharp.Data,6.4.1"
+
+#!fsharp
+
+// let standardize_data (X_train: float[]) (X_test: float[]) =
+//     let mean = 
+//         X_train
+//         |> Seq.meanBy float
+//     let std = Seq.stDevPopulation X_train
+//     let predict (x: float[]) (w: float) (b: float) :float[] =
+//         x |> Array.map (fun xi -> w * xi + b)
+    
+//     let calculation (x:float[]) = x |> Array.map (fun xi -> (xi - mean) / std)
+
+//     let retXTrain = calculation X_train
+//     let retXTest = calculation X_test
+//     retXTrain, retXTest
+
+let standardize_data (X_train: float[]) =
+    let mean = 
+        X_train
+        |> Seq.meanBy float
+    let std = Seq.stDevPopulation X_train
+    let predict (x: float[]) (w: float) (b: float) :float[] =
+        x |> Array.map (fun xi -> w * xi + b)
+    
+    let calculation (x:float[]) = x |> Array.map (fun xi -> (xi - mean) / std)
+
+    let retXTrain = calculation X_train
+    retXTrain
+
+#!fsharp
+
+open FSharp.Data
+let floatArray (row: seq<CsvRow>) (index: int) =
+    row
+    |> Seq.choose (fun row ->
+        try 
+            Some(float (row.Item index))  // Try to convert
+        with
+            | _ -> None  // Skip bad rows
+    )
+    |> Seq.toArray
+
+
+let train = CsvFile.Load(
+    Directory.GetCurrentDirectory() + "/train.csv")
+
+let trainX = standardize_data (floatArray train.Rows 0)
+let trainY = floatArray train.Rows 1
+
+
+let test = CsvFile.Load(
+    Directory.GetCurrentDirectory() + "/test.csv")
+let testX = standardize_data (floatArray test.Rows 0)
+let testY = floatArray test.Rows 1
+
+
+
+
+
+// def standardize_data(X_train, X_test):
+//     """
+//     Standardizes the input data using mean and standard deviation.
+
+//     Parameters:
+//         X_train (numpy.ndarray): Training data.
+//         X_test (numpy.ndarray): Testing data.
+
+//     Returns:
+//         Tuple of standardized training and testing data.
+//     """
+//     # Calculate the mean and standard deviation using the training data
+//     mean = np.mean(X_train, axis=0)
+//     std = np.std(X_train, axis=0)
+    
+//     # Standardize the data
+//     X_train = (X_train - mean) / std
+//     X_test = (X_test - mean) / std
+    
+//     return X_train, X_test
+
+// X_train, X_test = standardize_data(X_train, X_test)
+
+#!fsharp
+
+let w,b = coefficient_ols trainX trainY
+
+w,b
+
+#!fsharp
+
+MSE (predict testX w b) testY
+
+#!fsharp
+
+#r "nuget: FSharp.Stats, 0.6.0"
+
+#!fsharp
+
+open FSharp.Stats
+
+let data = [|1.;3.;5.;4.;2.;8.|]
+
+let varPopulation = Seq.varPopulation data
+varPopulation
+
+#!fsharp
+
+let a (f: float,b) = 
+    f,b
+
+
+a (6.-7.*100., 7+6*100)

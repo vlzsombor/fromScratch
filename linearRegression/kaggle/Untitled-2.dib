@@ -1,7 +1,0 @@
-#!meta
-
-{"kernelInfo":{"defaultKernelName":"fsharp","items":[{"aliases":[],"languageName":"fsharp","name":"fsharp"}]}}
-
-#!fsharp
-
-#r "nuget:Numpy, 3.11.1.34"
