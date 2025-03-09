@@ -1,4 +1,6 @@
-﻿open FSharp.Stats
+﻿module ConsoleApp1.LinearRegression
+
+open FSharp.Stats
 open FSharp.Data
 open System
 
