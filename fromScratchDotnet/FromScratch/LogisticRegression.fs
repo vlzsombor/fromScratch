@@ -126,7 +126,7 @@ type IGradientDescent =
     abstract member BackwardPass: Vector<float> -> Vector<float>*float
     abstract member ForwardPass: Matrix<float> -> Vector<float>
 
-type MyDisposable() =
+type MyLogisticRegression() =
     member val W: Vector<float> = MatrixTopLevelOperators.vector [ 0.0 ] with get, set
     member val b: float = 1. with get, set
     member val Y: Vector<float> = MatrixTopLevelOperators.vector [ 0.0 ] with get, set
@@ -134,7 +134,6 @@ type MyDisposable() =
 
     static member sigmoid z : Vector<float> =
         map (fun x -> 1. / (1. + (Math.Exp -x))) z
-// havent tested
     interface IGradientDescent with
         member this.CostFunction(predictions) : float =
             let smalloffset = 0.00000001
@@ -147,14 +146,11 @@ type MyDisposable() =
                 )
             - cost / float predictions.Length
         member this.BackwardPass(predictions: Vector<float>)=
-            let dW = (mulMV this.X.Transpose (sub predictions this.Y))
+            let dW = scale (1./float predictions.Length) (mulMV this.X.Transpose (sub predictions this.Y))
             let dB = mean (sub predictions this.Y)
-           
-            let dW2 = scale (1./float predictions.Length) dW 
-            dW2, dB
-
+            dW, dB
         member x.ForwardPass(X: Matrix<float>) : Vector<float> =
-            MyDisposable.sigmoid (addScalarV x.b (mulV X x.W))
+            MyLogisticRegression.sigmoid (addScalarV x.b (mulV X x.W))
 
     member this.Fit(X,y, iterations) =
         let learningRate = 0.0001
@@ -181,23 +177,10 @@ type MyDisposable() =
 let y = MatrixTopLevelOperators.vector [7; 1; -2; 3]
 let X: Matrix<double> = matrix [ [1;2;3]; [4;5;6]; [7;8;9];[10;11;17] ]
 
-let aaa = MyDisposable()
-// let aadfasd = a.NumRows
-// let afasdfasfasd = MatrixTopLevelOperators.vector (Array.init 3 (fun x -> 0))
-// aaa.InitializeParams(a)
-//
-//
+let aaa = MyLogisticRegression()
 
 
-aaa.Fit(X,y,1000)
+aaa.Fit(X,y,100000)
 
 printfn "%A" aaa.W
-//printfn "%A" ((aaa :> (IGradientDescent)).ForwardPass (a))
-
-
-// type DictionaryBackedClass() =
-//     inherit Node("fads")
-//     let dict = System.Collections.Generic.Dictionary<string, string>()
-//
-//     override this.GetArea() = 3.0
-//
+printfn "%A" aaa.b
