@@ -1,5 +1,6 @@
 Classification:
 * Logistic regression
+* Decision tree
 
 
 Clustering Algorithm:
