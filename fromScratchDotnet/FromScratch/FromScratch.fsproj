@@ -9,6 +9,7 @@
     <ItemGroup>
         <Compile Include="LinearRegression.fs" />
         <Compile Include="LogisticRegression.fs" />
+        <Compile Include="DecisionTree.fs" />
     </ItemGroup>
 
     <ItemGroup>
